@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>College Portal</title>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="./index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small>Attendance • Marks • Notes • Progress</small>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a class="btn" href="./student/login.html">Student</a>
+          <a class="btn" href="./teacher/login.html">Teacher</a>
+          <a class="btn primary" href="./admin/login.html">Admin</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="card hero-left">
+          <div class="kicker"><span class="dot"></span> Smart Academic Portal</div>
+          <h2 class="hero-title">Everything in one place.</h2>
+          <p class="hero-sub">
+            This portal helps students track attendance, marks, and notes — and helps teachers manage
+            classes faster. Built for departments like ISE, CSE, ECE, AIML.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn primary" href="./student/login.html">Student Login</a>
+            <a class="btn" href="./teacher/login.html">Teacher Login</a>
+          </div>
+
+          <div class="badges">
+            <span class="badge">Attendance</span>
+            <span class="badge">IA Marks</span>
+            <span class="badge">Notes</span>
+            <span class="badge">Announcements</span>
+          </div>
+        </div>
+
+        <div class="card hero-right">
+          <h3>Quick Info</h3>
+          <div class="list">
+            <div class="item">
+              <div class="icon"></div>
+              <div>
+                <strong>Students</strong>
+                <p>Login using USN + DOB + 4-digit ID code.</p>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="icon"></div>
+              <div>
+                <strong>Teachers</strong>
+                <p>Take attendance, add marks, and upload notes.</p>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="icon"></div>
+              <div>
+                <strong>Admin</strong>
+                <p>Create classes, subjects, teachers, and students.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+          <p class="small">
+            Tip: For best experience, use Chrome on desktop. Mobile UI will be added later.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid3">
+        <div class="card pad mini">
+          <h4>Announcements</h4>
+          <p>Department updates, holidays, exam circulars, and events will appear here.</p>
+        </div>
+
+        <div class="card pad mini">
+          <h4>Attendance Reports</h4>
+          <p>Subject-wise attendance with total percentage and date-wise history.</p>
+        </div>
+
+        <div class="card pad mini">
+          <h4>Notes & Materials</h4>
+          <p>Teachers can upload PDFs and links. Students can download anytime.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div class="container">
+        © <span id="yr"></span> College Portal • Built with Supabase
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+      document.getElementById("yr").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Login • College Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="../index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small>Student Login</small>
+          </div>
+        </a>
+        <div class="nav-links">
+          <a class="btn" href="../index.html">Home</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container" style="max-width: 520px">
+        <div class="card pad">
+          <h2 style="margin: 0 0 8px">Student Login</h2>
+          <p class="small" style="margin-top: 0">
+            Enter your USN and DOB. Then enter your 4-digit ID code.
+          </p>
+
+          <div class="hr"></div>
+
+          <form class="form" id="step1Form">
+            <label class="label">
+              <span>USN</span>
+              <input class="input" id="usn" placeholder="1BY23IS001" autocomplete="off" />
+            </label>
+
+            <label class="label">
+              <span>DOB (DD/MM/YYYY)</span>
+              <input class="input" id="dob" placeholder="21/03/2005" autocomplete="off" />
+            </label>
+
+            <button class="btn primary" type="submit">Next</button>
+          </form>
+
+          <form class="form" id="step2Form" style="display: none">
+            <label class="label">
+              <span>4-digit ID Code</span>
+              <input class="input" id="idcode" placeholder="1234" maxlength="4" autocomplete="off" />
+            </label>
+
+            <button class="btn primary" type="submit">Login</button>
+            <button class="btn" type="button" id="backBtn">Back</button>
+          </form>
+
+          <div class="hr"></div>
+          <p class="small">
+            Note: Student password is not changeable. Contact department if details are wrong.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/common.js"></script>
+
+    <script>
+      // UI-only for now.
+      // In Sprint 2 we will connect this to DB and create student_sessions.
+
+      const step1Form = qs("#step1Form");
+      const step2Form = qs("#step2Form");
+
+      step1Form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const usn = qs("#usn").value.trim();
+        const dob = qs("#dob").value.trim();
+
+        if (!usn || !dob) {
+          toast("Enter USN and DOB.", "danger");
+          return;
+        }
+
+        // basic USN format check
+        if (!/^[0-9][A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{3}$/i.test(usn)) {
+          toast("USN format looks wrong. Example: 1BY23IS001", "danger");
+          return;
+        }
+
+        // basic DOB format check
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dob)) {
+          toast("DOB format must be DD/MM/YYYY", "danger");
+          return;
+        }
+
+        hide(step1Form);
+        show(step2Form);
+        toast("Now enter your 4-digit ID code.", "ok");
+      });
+
+      qs("#backBtn").addEventListener("click", () => {
+        hide(step2Form);
+        show(step1Form);
+      });
+
+      step2Form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const code = qs("#idcode").value.trim();
+        if (!/^\d{4}$/.test(code)) {
+          toast("Enter a valid 4-digit code.", "danger");
+          return;
+        }
+
+        toast("Student login will be connected in Sprint 2.", "ok");
+      });
+    </script>
+  </body>
+</html>

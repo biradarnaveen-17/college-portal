@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard • College Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="../index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small id="studentName">Student Dashboard</small>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a class="btn" href="../index.html">Home</a>
+          <button class="btn danger" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="card pad">
+          <h2 style="margin: 0 0 8px">Welcome 👋</h2>
+          <p class="small" style="margin: 0" id="studentInfo">Loading...</p>
+
+          <div class="hr"></div>
+
+          <div class="grid3">
+            <div class="card pad mini">
+              <h4>Attendance</h4>
+              <p>Coming in Sprint 3.</p>
+            </div>
+
+            <div class="card pad mini">
+              <h4>Marks</h4>
+              <p>Coming in Sprint 3.</p>
+            </div>
+
+            <div class="card pad mini">
+              <h4>Notes</h4>
+              <p>Coming in Sprint 4.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/common.js"></script>
+
+    <script>
+      async function getStudentFromSession() {
+        const raw = localStorage.getItem("student_session");
+        if (!raw) return null;
+
+        const sess = JSON.parse(raw);
+
+        const { data: sessRow, error: sessErr } = await supabaseClient
+          .from("student_sessions")
+          .select("student_id, expires_at, revoked")
+          .eq("session_token", sess.session_token)
+          .maybeSingle();
+
+        if (sessErr) throw sessErr;
+        if (!sessRow) return null;
+
+        if (sessRow.revoked) return null;
+
+        const exp = new Date(sessRow.expires_at).getTime();
+        if (Date.now() > exp) return null;
+
+        const { data: student, error: stErr } = await supabaseClient
+          .from("students")
+          .select("full_name, usn, department, semester, section")
+          .eq("id", sessRow.student_id)
+          .maybeSingle();
+
+        if (stErr) throw stErr;
+        return student;
+      }
+
+      qs("#logoutBtn").addEventListener("click", async () => {
+        const raw = localStorage.getItem("student_session");
+        if (raw) {
+          try {
+            const sess = JSON.parse(raw);
+            await supabaseClient
+              .from("student_sessions")
+              .update({ revoked: true })
+              .eq("session_token", sess.session_token);
+          } catch {}
+        }
+
+        localStorage.removeItem("student_session");
+        window.location.href = "./login.html";
+      });
+
+      async function init() {
+        try {
+          const student = await getStudentFromSession();
+          if (!student) {
+            window.location.href = "./login.html";
+            return;
+          }
+
+          qs("#studentName").textContent = student.full_name + " • Student Dashboard";
+          qs("#studentInfo").innerHTML = `
+            <b>${student.usn}</b> • ${student.department} • Sem ${student.semester} • Sec ${student.section}
+          `;
+        } catch (err) {
+          console.error(err);
+          toast("Session error. Login again.", "danger");
+          setTimeout(() => (window.location.href = "./login.html"), 900);
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>

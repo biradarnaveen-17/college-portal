@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login • College Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="../index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small>Admin Login</small>
+          </div>
+        </a>
+        <div class="nav-links">
+          <a class="btn" href="../index.html">Home</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container" style="max-width: 520px">
+        <div class="card pad">
+          <h2 style="margin: 0 0 8px">Admin Login</h2>
+          <p class="small" style="margin-top: 0">
+            Use admin credentials to manage students, teachers, classes, and subjects.
+          </p>
+
+          <div class="hr"></div>
+
+          <form class="form" id="adminLoginForm">
+            <label class="label">
+              <span>Admin Email</span>
+              <input class="input" id="email" type="email" placeholder="admin@college.com" />
+            </label>
+
+            <label class="label">
+              <span>Password</span>
+              <input class="input" id="password" type="password" placeholder="Enter password" />
+            </label>
+
+            <button class="btn primary" id="loginBtn" type="submit">Login</button>
+          </form>
+
+          <div class="hr"></div>
+
+          <p class="small">
+            Default Admin:
+            <br />
+            Email: <b>admin@college.com</b>
+            <br />
+            Password: <b>Admin@123</b>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/common.js"></script>
+
+    <script>
+      function setLoading(isLoading) {
+        const btn = qs("#loginBtn");
+        btn.disabled = isLoading;
+        btn.textContent = isLoading ? "Logging in..." : "Login";
+      }
+
+      async function adminLogin(email, password) {
+        // 1) Fetch admin row by email
+        const { data, error } = await supabaseClient
+          .from("admins")
+          .select("id, email, full_name, password_hash")
+          .eq("email", email)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) return { ok: false, msg: "Admin not found." };
+
+        // 2) Verify password using Postgres crypt()
+        // We verify by calling an RPC-like trick:
+        // select crypt('pass', stored_hash) = stored_hash
+
+        const { data: verifyData, error: verifyErr } = await supabaseClient.rpc("verify_password", {
+          plain_password: password,
+          stored_hash: data.password_hash,
+        });
+
+        if (verifyErr) throw verifyErr;
+
+        if (verifyData !== true) return { ok: false, msg: "Wrong password." };
+
+        // 3) Save admin session in localStorage (simple)
+        localStorage.setItem(
+          "admin_session",
+          JSON.stringify({
+            admin_id: data.id,
+            email: data.email,
+            full_name: data.full_name,
+            login_time: new Date().toISOString(),
+          })
+        );
+
+        return { ok: true };
+      }
+
+      qs("#adminLoginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = qs("#email").value.trim().toLowerCase();
+        const password = qs("#password").value;
+
+        if (!email || !password) {
+          toast("Enter email and password.", "danger");
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const res = await adminLogin(email, password);
+          if (!res.ok) {
+            toast(res.msg || "Login failed.", "danger");
+            setLoading(false);
+            return;
+          }
+
+          toast("Login success!", "ok");
+          setTimeout(() => {
+            window.location.href = "./adminDashboard.html";
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          toast("Error connecting to database.", "danger");
+          setLoading(false);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -32,6 +32,7 @@
 
           <div class="hr"></div>
 
+          <!-- STEP 1 -->
           <form class="form" id="step1Form">
             <label class="label">
               <span>USN</span>
@@ -43,16 +44,17 @@
               <input class="input" id="dob" placeholder="21/03/2005" autocomplete="off" />
             </label>
 
-            <button class="btn primary" type="submit">Next</button>
+            <button class="btn primary" id="nextBtn" type="submit">Next</button>
           </form>
 
+          <!-- STEP 2 -->
           <form class="form" id="step2Form" style="display: none">
             <label class="label">
               <span>4-digit ID Code</span>
               <input class="input" id="idcode" placeholder="1234" maxlength="4" autocomplete="off" />
             </label>
 
-            <button class="btn primary" type="submit">Login</button>
+            <button class="btn primary" id="loginBtn" type="submit">Login</button>
             <button class="btn" type="button" id="backBtn">Back</button>
           </form>
 
@@ -71,16 +73,80 @@
     <script src="../js/common.js"></script>
 
     <script>
-      // UI-only for now.
-      // In Sprint 2 we will connect this to DB and create student_sessions.
-
       const step1Form = qs("#step1Form");
       const step2Form = qs("#step2Form");
 
-      step1Form.addEventListener("submit", (e) => {
+      let studentRow = null;
+      let dobISO = null;
+
+      function setBtnLoading(btn, loading, normalText) {
+        btn.disabled = loading;
+        btn.textContent = loading ? "Please wait..." : normalText;
+      }
+
+      function ddmmyyyyToISO(ddmmyyyy) {
+        const m = ddmmyyyy.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!m) return null;
+        const dd = m[1];
+        const mm = m[2];
+        const yyyy = m[3];
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      async function findStudent(usn, dobIso) {
+        const { data, error } = await supabaseClient
+          .from("students")
+          .select("id, usn, full_name, dob, id_code_hash, department, semester, section")
+          .eq("usn", usn)
+          .eq("dob", dobIso)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data;
+      }
+
+      async function verifyCode(code, hash) {
+        const { data, error } = await supabaseClient.rpc("verify_student_code", {
+          plain_code: code,
+          stored_hash: hash,
+        });
+
+        if (error) throw error;
+        return data === true;
+      }
+
+      async function createStudentSession(studentId) {
+        // session token
+        const token = crypto.randomUUID() + "-" + crypto.randomUUID();
+
+        // expiry: 7 days
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        const { error } = await supabaseClient.from("student_sessions").insert({
+          student_id: studentId,
+          session_token: token,
+          expires_at: expiresAt,
+          user_agent: navigator.userAgent,
+        });
+
+        if (error) throw error;
+
+        localStorage.setItem(
+          "student_session",
+          JSON.stringify({
+            session_token: token,
+            student_id: studentId,
+            created_at: new Date().toISOString(),
+          })
+        );
+      }
+
+      // STEP 1
+      step1Form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const usn = qs("#usn").value.trim();
+        const usn = qs("#usn").value.trim().toUpperCase();
         const dob = qs("#dob").value.trim();
 
         if (!usn || !dob) {
@@ -88,30 +154,59 @@
           return;
         }
 
-        // basic USN format check
-        if (!/^[0-9][A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{3}$/i.test(usn)) {
-          toast("USN format looks wrong. Example: 1BY23IS001", "danger");
+        if (!/^[0-9][A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{3}$/.test(usn)) {
+          toast("USN format wrong. Example: 1BY23IS001", "danger");
           return;
         }
 
-        // basic DOB format check
-        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dob)) {
-          toast("DOB format must be DD/MM/YYYY", "danger");
+        dobISO = ddmmyyyyToISO(dob);
+        if (!dobISO) {
+          toast("DOB must be DD/MM/YYYY", "danger");
           return;
         }
 
-        hide(step1Form);
-        show(step2Form);
-        toast("Now enter your 4-digit ID code.", "ok");
+        const nextBtn = qs("#nextBtn");
+        setBtnLoading(nextBtn, true, "Next");
+
+        try {
+          const row = await findStudent(usn, dobISO);
+
+          if (!row) {
+            toast("Student not found. Check USN and DOB.", "danger");
+            setBtnLoading(nextBtn, false, "Next");
+            return;
+          }
+
+          studentRow = row;
+
+          hide(step1Form);
+          show(step2Form);
+          toast("Enter your 4-digit ID code.", "ok");
+        } catch (err) {
+          console.error(err);
+          toast("Database error. Try again.", "danger");
+        }
+
+        setBtnLoading(nextBtn, false, "Next");
       });
 
+      // BACK
       qs("#backBtn").addEventListener("click", () => {
+        studentRow = null;
+        dobISO = null;
+        qs("#idcode").value = "";
         hide(step2Form);
         show(step1Form);
       });
 
-      step2Form.addEventListener("submit", (e) => {
+      // STEP 2
+      step2Form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        if (!studentRow) {
+          toast("Go back and enter USN + DOB.", "danger");
+          return;
+        }
 
         const code = qs("#idcode").value.trim();
         if (!/^\d{4}$/.test(code)) {
@@ -119,7 +214,30 @@
           return;
         }
 
-        toast("Student login will be connected in Sprint 2.", "ok");
+        const loginBtn = qs("#loginBtn");
+        setBtnLoading(loginBtn, true, "Login");
+
+        try {
+          const ok = await verifyCode(code, studentRow.id_code_hash);
+
+          if (!ok) {
+            toast("Wrong ID code.", "danger");
+            setBtnLoading(loginBtn, false, "Login");
+            return;
+          }
+
+          await createStudentSession(studentRow.id);
+
+          toast("Login success!", "ok");
+          setTimeout(() => {
+            window.location.href = "./studentDashboard.html";
+          }, 600);
+        } catch (err) {
+          console.error(err);
+          toast("Login error. Try again.", "danger");
+        }
+
+        setBtnLoading(loginBtn, false, "Login");
       });
     </script>
   </body>

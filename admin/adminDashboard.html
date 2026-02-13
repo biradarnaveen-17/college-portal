@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard • College Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .tab {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 800;
+        font-size: 13px;
+        user-select: none;
+      }
+
+      .tab.active {
+        background: linear-gradient(135deg, rgba(124, 92, 255, 0.85), rgba(45, 212, 191, 0.75));
+        border: none;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      @media (max-width: 900px) {
+        .grid2 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .table th,
+      .table td {
+        padding: 12px 10px;
+        font-size: 13px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .table th {
+        color: rgba(255, 255, 255, 0.75);
+        font-weight: 900;
+      }
+
+      .table td {
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        font-weight: 800;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .danger {
+        border-color: rgba(255, 77, 109, 0.35) !important;
+      }
+
+      .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="../index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small id="adminName">Admin Dashboard</small>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a class="btn" href="../index.html">Home</a>
+          <button class="btn danger" id="logoutBtn">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="card pad">
+          <div class="topbar">
+            <div>
+              <h2 style="margin: 0 0 6px">Admin Dashboard</h2>
+              <p class="small" style="margin: 0">
+                Add and manage classes, subjects, teachers, and students.
+              </p>
+            </div>
+            <div class="pill" id="adminEmail">Loading...</div>
+          </div>
+
+          <div class="tabs">
+            <div class="tab active" data-tab="classes">Classes</div>
+            <div class="tab" data-tab="subjects">Subjects</div>
+            <div class="tab" data-tab="teachers">Teachers</div>
+            <div class="tab" data-tab="students">Students</div>
+          </div>
+        </div>
+
+        <!-- CLASSES -->
+        <div class="grid2" id="tab-classes">
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Add Class</h3>
+
+            <form class="form" id="classForm">
+              <label class="label">
+                <span>Department</span>
+                <input class="input" id="c_dept" placeholder="ISE" />
+              </label>
+
+              <label class="label">
+                <span>Semester</span>
+                <input class="input" id="c_sem" type="number" placeholder="4" min="1" max="8" />
+              </label>
+
+              <label class="label">
+                <span>Section</span>
+                <input class="input" id="c_sec" placeholder="A" />
+              </label>
+
+              <button class="btn primary" type="submit">Create Class</button>
+            </form>
+          </div>
+
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Classes List</h3>
+            <table class="table" id="classesTable">
+              <thead>
+                <tr>
+                  <th>Class Code</th>
+                  <th>Dept</th>
+                  <th>Sem</th>
+                  <th>Sec</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBJECTS -->
+        <div class="grid2" id="tab-subjects" style="display: none">
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Add Subject</h3>
+
+            <form class="form" id="subjectForm">
+              <label class="label">
+                <span>Department</span>
+                <input class="input" id="s_dept" placeholder="ISE" />
+              </label>
+
+              <label class="label">
+                <span>Semester</span>
+                <input class="input" id="s_sem" type="number" placeholder="4" min="1" max="8" />
+              </label>
+
+              <label class="label">
+                <span>Subject Code</span>
+                <input class="input" id="s_code" placeholder="BCS403" />
+              </label>
+
+              <label class="label">
+                <span>Subject Name</span>
+                <input class="input" id="s_name" placeholder="Database Management Systems" />
+              </label>
+
+              <button class="btn primary" type="submit">Create Subject</button>
+            </form>
+          </div>
+
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Subjects List</h3>
+            <table class="table" id="subjectsTable">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Dept</th>
+                  <th>Sem</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TEACHERS -->
+        <div class="grid2" id="tab-teachers" style="display: none">
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Add Teacher</h3>
+
+            <form class="form" id="teacherForm">
+              <label class="label">
+                <span>Full Name</span>
+                <input class="input" id="t_name" placeholder="Mr. Ravi Kumar" />
+              </label>
+
+              <label class="label">
+                <span>Email</span>
+                <input class="input" id="t_email" type="email" placeholder="ravi@college.edu" />
+              </label>
+
+              <label class="label">
+                <span>Department</span>
+                <input class="input" id="t_dept" placeholder="ISE" />
+              </label>
+
+              <label class="label">
+                <span>Phone</span>
+                <input class="input" id="t_phone" placeholder="9876543210" />
+              </label>
+
+              <label class="label">
+                <span>Default Password</span>
+                <input class="input" id="t_pass" placeholder="Teacher@123" />
+              </label>
+
+              <button class="btn primary" type="submit">Create Teacher</button>
+            </form>
+          </div>
+
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Teachers List</h3>
+            <table class="table" id="teachersTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Dept</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- STUDENTS -->
+        <div class="grid2" id="tab-students" style="display: none">
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Add Student</h3>
+
+            <form class="form" id="studentForm">
+              <label class="label">
+                <span>Full Name</span>
+                <input class="input" id="st_name" placeholder="Naveen Biradar" />
+              </label>
+
+              <label class="label">
+                <span>USN</span>
+                <input class="input" id="st_usn" placeholder="1BY23IS001" />
+              </label>
+
+              <label class="label">
+                <span>DOB (DD/MM/YYYY)</span>
+                <input class="input" id="st_dob" placeholder="21/03/2005" />
+              </label>
+
+              <label class="label">
+                <span>4-digit ID Code</span>
+                <input class="input" id="st_code" placeholder="1234" maxlength="4" />
+              </label>
+
+              <label class="label">
+                <span>Department</span>
+                <input class="input" id="st_dept" placeholder="ISE" />
+              </label>
+
+              <label class="label">
+                <span>Semester</span>
+                <input class="input" id="st_sem" type="number" placeholder="4" min="1" max="8" />
+              </label>
+
+              <label class="label">
+                <span>Section</span>
+                <input class="input" id="st_sec" placeholder="A" />
+              </label>
+
+              <button class="btn primary" type="submit">Create Student</button>
+            </form>
+          </div>
+
+          <div class="card pad">
+            <h3 style="margin: 0 0 10px">Students List</h3>
+            <table class="table" id="studentsTable">
+              <thead>
+                <tr>
+                  <th>USN</th>
+                  <th>Name</th>
+                  <th>Dept</th>
+                  <th>Sem</th>
+                  <th>Sec</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/common.js"></script>
+
+    <script>
+      // ----------------------------
+      // Session check
+      // ----------------------------
+      const sessionRaw = localStorage.getItem("admin_session");
+      if (!sessionRaw) window.location.href = "./login.html";
+
+      const adminSession = JSON.parse(sessionRaw);
+      qs("#adminEmail").textContent = adminSession.email;
+      qs("#adminName").textContent = adminSession.full_name + " • Admin Dashboard";
+
+      qs("#logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("admin_session");
+        window.location.href = "./login.html";
+      });
+
+      // ----------------------------
+      // Tabs
+      // ----------------------------
+      const tabs = qsa(".tab");
+      tabs.forEach((t) => {
+        t.addEventListener("click", () => {
+          tabs.forEach((x) => x.classList.remove("active"));
+          t.classList.add("active");
+
+          const name = t.dataset.tab;
+          hide("#tab-classes");
+          hide("#tab-subjects");
+          hide("#tab-teachers");
+          hide("#tab-students");
+          show(`#tab-${name}`);
+        });
+      });
+
+      // ----------------------------
+      // Helpers
+      // ----------------------------
+      function ddmmyyyyToISO(ddmmyyyy) {
+        // "21/03/2005" -> "2005-03-21"
+        const m = ddmmyyyy.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!m) return null;
+        const dd = m[1];
+        const mm = m[2];
+        const yyyy = m[3];
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      async function hashWithCrypt(plain) {
+        // We'll hash in DB using a SQL function later for security.
+        // For now, we will use Supabase function crypt via RPC in Sprint 2.
+        return plain; // placeholder (will be fixed)
+      }
+
+      // ----------------------------
+      // Load lists
+      // ----------------------------
+      async function loadClasses() {
+        const { data, error } = await supabaseClient
+          .from("classes")
+          .select("class_code, department, semester, section")
+          .order("department", { ascending: true });
+
+        if (error) {
+          console.error(error);
+          toast("Failed to load classes.", "danger");
+          return;
+        }
+
+        const tbody = qs("#classesTable tbody");
+        tbody.innerHTML = "";
+        data.forEach((c) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><span class="pill">${c.class_code}</span></td>
+            <td>${c.department}</td>
+            <td>${c.semester}</td>
+            <td>${c.section}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadSubjects() {
+        const { data, error } = await supabaseClient
+          .from("subjects")
+          .select("subject_code, subject_name, department, semester")
+          .order("department", { ascending: true });
+
+        if (error) {
+          console.error(error);
+          toast("Failed to load subjects.", "danger");
+          return;
+        }
+
+        const tbody = qs("#subjectsTable tbody");
+        tbody.innerHTML = "";
+        data.forEach((s) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><span class="pill">${s.subject_code}</span></td>
+            <td>${s.subject_name}</td>
+            <td>${s.department}</td>
+            <td>${s.semester}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadTeachers() {
+        const { data, error } = await supabaseClient
+          .from("teachers")
+          .select("full_name, email, department, is_active")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error(error);
+          toast("Failed to load teachers.", "danger");
+          return;
+        }
+
+        const tbody = qs("#teachersTable tbody");
+        tbody.innerHTML = "";
+        data.forEach((t) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${t.full_name}</td>
+            <td>${t.email}</td>
+            <td>${t.department}</td>
+            <td>${t.is_active ? "<span class='pill'>Active</span>" : "<span class='pill danger'>Disabled</span>"}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function loadStudents() {
+        const { data, error } = await supabaseClient
+          .from("students")
+          .select("usn, full_name, department, semester, section")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error(error);
+          toast("Failed to load students.", "danger");
+          return;
+        }
+
+        const tbody = qs("#studentsTable tbody");
+        tbody.innerHTML = "";
+        data.forEach((s) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><span class="pill">${s.usn}</span></td>
+            <td>${s.full_name}</td>
+            <td>${s.department}</td>
+            <td>${s.semester}</td>
+            <td>${s.section}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ----------------------------
+      // Create Class
+      // ----------------------------
+      qs("#classForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const dept = qs("#c_dept").value.trim().toUpperCase();
+        const sem = parseInt(qs("#c_sem").value.trim(), 10);
+        const sec = qs("#c_sec").value.trim().toUpperCase();
+
+        if (!dept || !sem || !sec) {
+          toast("Fill all class fields.", "danger");
+          return;
+        }
+
+        const classCode = `${dept}-${sem}-${sec}`;
+
+        const { error } = await supabaseClient.from("classes").insert({
+          department: dept,
+          semester: sem,
+          section: sec,
+          class_code: classCode,
+        });
+
+        if (error) {
+          console.error(error);
+          toast("Class already exists or error.", "danger");
+          return;
+        }
+
+        toast("Class created!", "ok");
+        qs("#classForm").reset();
+        loadClasses();
+      });
+
+      // ----------------------------
+      // Create Subject
+      // ----------------------------
+      qs("#subjectForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const dept = qs("#s_dept").value.trim().toUpperCase();
+        const sem = parseInt(qs("#s_sem").value.trim(), 10);
+        const code = qs("#s_code").value.trim().toUpperCase();
+        const name = qs("#s_name").value.trim();
+
+        if (!dept || !sem || !code || !name) {
+          toast("Fill all subject fields.", "danger");
+          return;
+        }
+
+        const { error } = await supabaseClient.from("subjects").insert({
+          department: dept,
+          semester: sem,
+          subject_code: code,
+          subject_name: name,
+        });
+
+        if (error) {
+          console.error(error);
+          toast("Subject already exists or error.", "danger");
+          return;
+        }
+
+        toast("Subject created!", "ok");
+        qs("#subjectForm").reset();
+        loadSubjects();
+      });
+
+      // ----------------------------
+      // Create Teacher
+      // ----------------------------
+      qs("#teacherForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const fullName = qs("#t_name").value.trim();
+        const email = qs("#t_email").value.trim().toLowerCase();
+        const dept = qs("#t_dept").value.trim().toUpperCase();
+        const phone = qs("#t_phone").value.trim();
+        const pass = qs("#t_pass").value.trim();
+
+        if (!fullName || !email || !dept || !pass) {
+          toast("Fill all teacher required fields.", "danger");
+          return;
+        }
+
+        // Password hashing in DB (bcrypt)
+        const { data: hashData, error: hashErr } = await supabaseClient.rpc("hash_password", {
+          plain_password: pass,
+        });
+
+        if (hashErr) {
+          console.error(hashErr);
+          toast("Password hashing error.", "danger");
+          return;
+        }
+
+        const { error } = await supabaseClient.from("teachers").insert({
+          full_name: fullName,
+          email,
+          department: dept,
+          phone: phone || null,
+          password_hash: hashData,
+        });
+
+        if (error) {
+          console.error(error);
+          toast("Teacher already exists or error.", "danger");
+          return;
+        }
+
+        toast("Teacher created!", "ok");
+        qs("#teacherForm").reset();
+        loadTeachers();
+      });
+
+      // ----------------------------
+      // Create Student
+      // ----------------------------
+      qs("#studentForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const fullName = qs("#st_name").value.trim();
+        const usn = qs("#st_usn").value.trim().toUpperCase();
+        const dobText = qs("#st_dob").value.trim();
+        const idCode = qs("#st_code").value.trim();
+        const dept = qs("#st_dept").value.trim().toUpperCase();
+        const sem = parseInt(qs("#st_sem").value.trim(), 10);
+        const sec = qs("#st_sec").value.trim().toUpperCase();
+
+        if (!fullName || !usn || !dobText || !idCode || !dept || !sem || !sec) {
+          toast("Fill all student fields.", "danger");
+          return;
+        }
+
+        if (!/^\d{4}$/.test(idCode)) {
+          toast("ID code must be 4 digits.", "danger");
+          return;
+        }
+
+        const dobISO = ddmmyyyyToISO(dobText);
+        if (!dobISO) {
+          toast("DOB must be DD/MM/YYYY", "danger");
+          return;
+        }
+
+        // Find class_id (optional)
+        const classCode = `${dept}-${sem}-${sec}`;
+        const { data: classRow } = await supabaseClient
+          .from("classes")
+          .select("id")
+          .eq("class_code", classCode)
+          .maybeSingle();
+
+        // Hash ID code in DB (bcrypt)
+        const { data: codeHash, error: codeHashErr } = await supabaseClient.rpc("hash_password", {
+          plain_password: idCode,
+        });
+
+        if (codeHashErr) {
+          console.error(codeHashErr);
+          toast("ID code hashing error.", "danger");
+          return;
+        }
+
+        const { error } = await supabaseClient.from("students").insert({
+          full_name: fullName,
+          usn,
+          dob: dobISO,
+          id_code_hash: codeHash,
+          department: dept,
+          semester: sem,
+          section: sec,
+          class_id: classRow?.id || null,
+        });
+
+        if (error) {
+          console.error(error);
+          toast("Student already exists or error.", "danger");
+          return;
+        }
+
+        toast("Student created!", "ok");
+        qs("#studentForm").reset();
+        loadStudents();
+      });
+
+      // ----------------------------
+      // Initial Load
+      // ----------------------------
+      async function init() {
+        await loadClasses();
+        await loadSubjects();
+        await loadTeachers();
+        await loadStudents();
+      }
+
+      init();
+    </script>
+  </body>
+</html>

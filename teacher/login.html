@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Login • College Portal</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="../index.html">
+          <div class="logo"></div>
+          <div>
+            <h1>College Portal</h1>
+            <small>Teacher Login</small>
+          </div>
+        </a>
+        <div class="nav-links">
+          <a class="btn" href="../index.html">Home</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container" style="max-width: 520px">
+        <div class="card pad">
+          <h2 style="margin: 0 0 8px">Teacher Login</h2>
+          <p class="small" style="margin-top: 0">
+            Teachers login using email + password. Forgot password will be OTP-based.
+          </p>
+
+          <div class="hr"></div>
+
+          <form class="form" id="teacherLoginForm">
+            <label class="label">
+              <span>Email</span>
+              <input class="input" id="email" type="email" placeholder="teacher@college.edu" />
+            </label>
+
+            <label class="label">
+              <span>Password</span>
+              <input class="input" id="password" type="password" placeholder="Enter password" />
+            </label>
+
+            <button class="btn primary" type="submit">Login</button>
+            <a class="btn" href="#">Forgot Password</a>
+          </form>
+
+          <div class="hr"></div>
+          <p class="small">
+            Note: Password reset will be enabled after Sprint 5 (Spring Boot OTP service).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/common.js"></script>
+
+    <script>
+      // UI-only for now.
+      qs("#teacherLoginForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        toast("Teacher login will be connected in Sprint 3.", "ok");
+      });
+    </script>
+  </body>
+</html>
